@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Winter Tracksuit Promo - Production Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom Font Setup for Premium Feel */
+        body { font-family: 'Lato', sans-serif; background-color: #F5F5F0; color: #2D2D2D; }
+        h1, h2, h3 { font-family: 'Playfair Display', serif; }
+        
+        /* Chart Container Utilities */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        
+        /* Interactive Card Styling */
+        .shot-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        .shot-card.active {
+            border-left: 4px solid #8C7B75;
+            background-color: #EBEBE6;
+            transform: translateX(5px);
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+    </style>
+    <!-- Chosen Palette: "Warm Minimalist Luxury" - #F5F5F0 (Bone White), #EBEBE6 (Light Greige), #8C7B75 (Warm Taupe), #2D2D2D (Charcoal), #FFFFFF (White) -->
+    <!-- Application Structure Plan: 
+         1. Header: Project Title & Mood Context.
+         2. Pre-Production Grid: Key technical requirements (Lighting, Camera, Wardrobe) presented as cards.
+         3. Timeline & Pacing Section (The Core):
+            - Left: A vertical interactive list of shots (Source Script).
+            - Right: Visualizations (Chart.js) showing time distribution and shot variety.
+            - Interaction: Clicking a list item highlights the chart segment and updates a "Director's Monitor" detail view.
+         4. Playback Simulator: A JS-driven feature to "play" through the 15s timeline, highlighting shots in real-time sequence.
+         This structure converts a static text script into a time-based planning tool, essential for video production.
+    -->
+    <!-- Visualization & Content Choices: 
+         - Timeline Flow -> Goal: Visualize Pacing -> Viz: Stacked Horizontal Bar Chart (Chart.js) -> Interaction: Hover to see shot details -> Justification: Shows relative length of shots in the 15s window clearly.
+         - Shot Type Distribution -> Goal: Analyze Variety -> Viz: Doughnut Chart (Chart.js) -> Interaction: Filter list by type -> Justification: Ensures the video isn't monotonous (e.g., all close-ups).
+         - Production Notes -> Goal: Inform -> Viz: Styled Info Cards -> Interaction: None (Static ref) -> Justification: Quick reference for crew.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="antialiased">
+
+    <!-- Navigation / Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Production Dashboard</h1>
+                <p class="text-sm text-gray-500 uppercase tracking-widest">Winter Tracksuit Collection • 9:16 Vertical</p>
+            </div>
+            <div class="hidden md:flex space-x-6 text-sm font-medium text-gray-600">
+                <span>Total Duration: 15s</span>
+                <span>FPS: 60</span>
+                <span class="text-yellow-600">Status: Pre-Production</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+        <!-- Section 1: Mood & Technical Requirements -->
+        <section>
+            <div class="mb-6">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Pre-Production Brief</h2>
+                <p class="text-gray-600 max-w-3xl">
+                    This section consolidates the core technical and aesthetic requirements derived from the script. 
+                    It serves as the "source of truth" for the camera, lighting, and wardrobe departments before filming begins.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Lighting Card -->
+                <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-[#8C7B75]">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Lighting Setup</h3>
+                        <span class="text-2xl">💡</span>
+                    </div>
+                    <ul class="space-y-3 text-sm text-gray-600">
+                        <li class="flex items-start">
+                            <span class="mr-2">•</span>
+                            <span><strong>Key Light:</strong> Large softbox or window (Side/Rembrandt).</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="mr-2">•</span>
+                            <span><strong>Goal:</strong> Create depth & highlight plush fabric texture.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="mr-2">•</span>
+                            <span><strong>Avoid:</strong> Harsh overhead lighting.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Camera Card -->
+                <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-[#8C7B75]">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Camera Specs</h3>
+                        <span class="text-2xl">🎥</span>
+                    </div>
+                    <ul class="space-y-3 text-sm text-gray-600">
+                        <li class="flex items-start">
+                            <span class="mr-2">•</span>
+                            <span><strong>Frame Rate:</strong> 60fps (for slow-motion options).</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="mr-2">•</span>
+                            <span><strong>Aspect Ratio:</strong> 9:16 (Vertical Full).</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="mr-2">•</span>
+                            <span><strong>Style:</strong> Stable movement, handheld orbital for details.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Wardrobe & Audio Card -->
+                <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-[#8C7B75]">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Style & Audio</h3>
+                        <span class="text-2xl">🎵</span>
+                    </div>
+                    <ul class="space-y-3 text-sm text-gray-600">
+                        <li class="flex items-start">
+                            <span class="mr-2">•</span>
+                            <span><strong>Outfit:</strong> Two-piece tracksuit, thick plush fabric.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="mr-2">•</span>
+                            <span><strong>Prep:</strong> Steam & lint-roll thoroughly.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="mr-2">•</span>
+                            <span><strong>Audio:</strong> Lo-fi chill beat or Deep House (Minimal).</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Interactive Timeline & Shot Analysis -->
+        <section>
+            <div class="flex flex-col md:flex-row justify-between items-end mb-6">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Timeline & Shot Analysis</h2>
+                    <p class="text-gray-600 max-w-3xl">
+                        A detailed breakdown of the 15-second edit. Use the controls to simulate the video flow or select specific shots to view detailed direction notes.
+                        The charts provide a visual analysis of pacing and shot variety.
+                    </p>
+                </div>
+                <div class="mt-4 md:mt-0">
+                    <button id="simulateBtn" class="bg-[#2D2D2D] text-white px-6 py-2 rounded shadow hover:bg-gray-800 transition duration-200 flex items-center">
+                        <span class="mr-2">▶</span> Simulate Flow
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                <!-- Left Column: Shot List (Interactive) -->
+                <div class="lg:col-span-5 space-y-4">
+                    <div id="shotListContainer" class="space-y-3">
+                        <!-- Content populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Right Column: Visualizations & Detail View -->
+                <div class="lg:col-span-7 space-y-8">
+                    
+                    <!-- Dynamic Detail View (The "Monitor") -->
+                    <div id="detailView" class="bg-gray-900 text-white p-6 rounded-lg shadow-lg min-h-[180px] flex flex-col justify-center transition-all duration-300">
+                        <p class="text-gray-400 text-sm uppercase tracking-widest mb-2">Director's Monitor</p>
+                        <h3 id="monitorTitle" class="text-2xl font-playfair mb-2">Select a shot to view details</h3>
+                        <p id="monitorAction" class="text-gray-300 font-light italic">Waiting for input...</p>
+                        <div class="mt-4 flex items-center text-xs text-gray-500 font-mono">
+                            <span id="monitorTime" class="mr-4 border border-gray-700 px-2 py-1 rounded">00:00</span>
+                            <span id="monitorCamera"></span>
+                        </div>
+                    </div>
+
+                    <!-- Charts Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Timeline Chart -->
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <h4 class="text-sm font-bold text-gray-700 mb-4 uppercase">Timeline Pacing (Seconds)</h4>
+                            <div class="chart-container">
+                                <canvas id="timelineChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Shot Type Distribution -->
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <h4 class="text-sm font-bold text-gray-700 mb-4 uppercase">Shot Variety Analysis</h4>
+                            <div class="chart-container">
+                                <canvas id="distributionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Text Overlay Plan -->
+        <section class="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Text Overlay Schedule</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
+                <!-- Timeline decorative line -->
+                <div class="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-gray-200 transform -translate-x-1/2"></div>
+
+                <!-- Event 1 -->
+                <div class="md:text-right pr-0 md:pr-12">
+                    <span class="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-full mb-2">0:02</span>
+                    <h3 class="text-lg font-bold text-gray-800">"Winter Essentials"</h3>
+                    <p class="text-gray-500 text-sm mt-1">Placement: Center Screen. Font: Small Sans-Serif (Clean).</p>
+                </div>
+
+                <!-- Spacer for grid offset -->
+                <div class="hidden md:block"></div>
+                <div class="hidden md:block"></div>
+
+                <!-- Event 2 -->
+                <div class="pl-0 md:pl-12">
+                    <span class="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-full mb-2">0:12</span>
+                    <h3 class="text-lg font-bold text-gray-800">"Available Now"</h3>
+                    <p class="text-gray-500 text-sm mt-1">Placement: Bottom Center. Font: Matching Style.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-900 text-gray-400 py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-sm">Generated for Winter Tracksuit Promo Production • 2024</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- Data Source ---
+        // Derived from the parsed source script
+        const shotData = [
+            {
+                id: 1,
+                timeRange: "0:00 - 0:04",
+                duration: 4,
+                type: "Full Body (Low Angle)",
+                action: "Model walks confidently into frame from a distance toward the camera. Hands loosely in pockets or swinging naturally.",
+                camera: "Static camera placed low, tilting slightly up as he gets closer.",
+                shortTitle: "Intro Walk"
+            },
+            {
+                id: 2,
+                timeRange: "0:04 - 0:08",
+                duration: 4,
+                type: "Medium Shot (Waist Up)",
+                action: "Model stops walking, pauses, and turns 45 degrees to his side. He looks toward the lens, then glances away coolly.",
+                camera: "Slight 'Push In' (move camera physically closer) to emphasize connection.",
+                shortTitle: "The Pause"
+            },
+            {
+                id: 3,
+                timeRange: "0:08 - 0:12",
+                duration: 4,
+                type: "Close-Up / Detail",
+                action: "Cut 1: Hood/shoulder texture. Cut 2: Pocket or cuff fit details.",
+                camera: "Handheld orbital movement (slow semi-circle) around specific details.",
+                shortTitle: "Fabric Details"
+            },
+            {
+                id: 4,
+                timeRange: "0:12 - 0:15",
+                duration: 3,
+                type: "Full Body (Profile)",
+                action: "Model adjusts hoodie slightly, looks back at camera, and walks out/fades.",
+                camera: "Static or slow pan to follow him out.",
+                shortTitle: "Outro"
+            }
+        ];
+
+        // --- State Management ---
+        let currentActiveId = null;
+        let simulationInterval = null;
+
+        // --- DOM Elements ---
+        const shotListContainer = document.getElementById('shotListContainer');
+        const monitorTitle = document.getElementById('monitorTitle');
+        const monitorAction = document.getElementById('monitorAction');
+        const monitorTime = document.getElementById('monitorTime');
+        const monitorCamera = document.getElementById('monitorCamera');
+        const detailView = document.getElementById('detailView');
+
+        // --- Initialization ---
+        function init() {
+            renderShotList();
+            initCharts();
+            
+            // Set initial state
+            activateShot(shotData[0]);
+
+            // Event Listener for Simulation
+            document.getElementById('simulateBtn').addEventListener('click', runSimulation);
+        }
+
+        // --- Render Functions ---
+        function renderShotList() {
+            shotListContainer.innerHTML = '';
+            shotData.forEach(shot => {
+                const card = document.createElement('div');
+                card.className = `shot-card bg-white p-4 rounded shadow-sm cursor-pointer hover:bg-gray-50`;
+                card.dataset.id = shot.id;
+                card.onclick = () => activateShot(shot);
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-gray-800">${shot.timeRange}</span>
+                        <span class="text-xs bg-[#EBEBE6] px-2 py-1 rounded text-gray-600">${shot.duration}s</span>
+                    </div>
+                    <h4 class="text-sm font-semibold text-[#8C7B75] mb-1">${shot.shortTitle}</h4>
+                    <p class="text-xs text-gray-500 truncate">${shot.type}</p>
+                `;
+                shotListContainer.appendChild(card);
+            });
+        }
+
+        function activateShot(shot) {
+            currentActiveId = shot.id;
+
+            // Update List Styles
+            document.querySelectorAll('.shot-card').forEach(el => {
+                if (parseInt(el.dataset.id) === shot.id) {
+                    el.classList.add('active');
+                } else {
+                    el.classList.remove('active');
+                }
+            });
+
+            // Update Monitor View
+            monitorTitle.textContent = shot.type;
+            monitorAction.textContent = `"${shot.action}"`;
+            monitorTime.textContent = `TIMECODE: ${shot.timeRange}`;
+            monitorCamera.textContent = `CAM: ${shot.camera}`;
+            
+            // Subtle flash effect on monitor
+            detailView.classList.remove('bg-gray-900');
+            detailView.classList.add('bg-gray-800');
+            setTimeout(() => {
+                detailView.classList.add('bg-gray-900');
+                detailView.classList.remove('bg-gray-800');
+            }, 100);
+        }
+
+        // --- Chart Logic ---
+        function initCharts() {
+            // Chart 1: Timeline (Horizontal Bar)
+            const ctxTimeline = document.getElementById('timelineChart').getContext('2d');
+            
+            // Prepare data for stacked bar (trick: using a floating bar chart essentially)
+            // But for simplicity in Chart.js, a horizontal bar where each dataset is a segment works well
+            // Or better: One dataset, showing duration values.
+            
+            new Chart(ctxTimeline, {
+                type: 'bar',
+                data: {
+                    labels: shotData.map(s => s.shortTitle),
+                    datasets: [{
+                        label: 'Duration (Seconds)',
+                        data: shotData.map(s => s.duration),
+                        backgroundColor: ['#8C7B75', '#A69B95', '#D6D6D0', '#4A4A4A'],
+                        borderWidth: 0,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', // Horizontal bar
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => `Duration: ${context.raw}s`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 16, // slightly more than 15 for buffer
+                            title: { display: true, text: 'Seconds' }
+                        },
+                        y: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // Chart 2: Shot Type Distribution (Doughnut)
+            const ctxDist = document.getElementById('distributionChart').getContext('2d');
+            
+            // Group data
+            const types = {};
+            shotData.forEach(s => {
+                // Simplify type string for chart
+                let simplifiedType = s.type.split('(')[0].trim();
+                types[simplifiedType] = (types[simplifiedType] || 0) + 1;
+            });
+
+            new Chart(ctxDist, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(types),
+                    datasets: [{
+                        data: Object.values(types),
+                        backgroundColor: ['#2D2D2D', '#8C7B75', '#D6D6D0'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        // --- Simulation Logic ---
+        function runSimulation() {
+            if (simulationInterval) return; // Prevent double click
+            
+            let index = 0;
+            const btn = document.getElementById('simulateBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="mr-2">■</span> Playing...';
+            btn.classList.add('bg-red-600');
+
+            function playStep() {
+                if (index >= shotData.length) {
+                    // Reset
+                    clearInterval(simulationInterval);
+                    simulationInterval = null;
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('bg-red-600');
+                    return;
+                }
+
+                activateShot(shotData[index]);
+                const duration = shotData[index].duration * 1000; // Real-time duration
+                
+                // For demo purposes, we speed it up (divide by 2) so user doesn't wait full 15s
+                const demoDuration = duration / 1.5; 
+                
+                index++;
+                setTimeout(playStep, demoDuration);
+            }
+
+            playStep();
+        }
+
+        // Start App
+        init();
+
+    </script>
+</body>
+</html>
